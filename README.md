@@ -250,6 +250,20 @@ generic "Failed to fetch") with these workarounds:
   same-origin with the site) is an alternative when live, on-click freshness is
   not required.
 
+## Link Import
+
+A link can carry benchmark files in its URL fragment, for example from a CI job's
+summary:
+
+```text
+https://<owner>.github.io/InferenceXCurve/#/inferencex?data=<payload>
+```
+
+Opening it adds the lines directly, shows them, and removes the data from the
+address bar so a reload does not import it again. Nothing is uploaded: the data
+never leaves the browser. See [`docs/link-import.md`](docs/link-import.md) for the
+payload format and how to produce links.
+
 ## Import Data File
 
 `Import File` (next to `Import Action Data`) loads a local `.csv`, `.tsv`,
@@ -300,6 +314,7 @@ included.
 
 - `src/main.ts`: UI, data editor, CSV handling, GitHub Actions import, and
   InferenceX sync state wiring.
+- `src/linkImport.ts`: link import payload decoding and encoding.
 - `src/inferenceXSync.ts`: public InferenceX API client, availability parsing,
   benchmark filtering, fingerprints, and sync line generation.
 - `src/inferenceCurveChart.ts`: D3 chart rendering and curve logic.
@@ -307,5 +322,6 @@ included.
 - `src/styles.css`: application and chart styling.
 - `vite.config.ts`: Vite base path and dev proxy for `/inferencex-api`.
 - `docs/import-csv.md`: CSV/TSV import contract for external integrations.
+- `docs/link-import.md`: link import payload contract for CI jobs and other tools.
 - `docs/import-plot-tool-csv.md`: generic Plot Tool CSV import/export contract.
 - `AGENTS.md`: contributor guidance for coding agents.

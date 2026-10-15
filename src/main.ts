@@ -4,6 +4,7 @@ import { getTheme, THEME_CHANGE_EVENT, type Theme } from './theme';
 import { strFromU8, unzipSync } from 'fflate';
 
 import { exampleSeries } from './exampleData';
+import { readLinkImport, stripLinkImport } from './linkImport';
 import {
   fetchInferenceXTcoPrices,
   INFERENCEX_TCO_CACHE_KEY,
@@ -1543,7 +1544,9 @@ window.addEventListener('inferencex-workspace-activate', () => {
   refreshEditorTheme();
   renderAll();
 });
-void initializeInferenceXSync();
+// Link imports run after the first sync so a first-visit sync result cannot replace them.
+void initializeInferenceXSync().finally(importFromLink);
+window.addEventListener('hashchange', importFromLink);
 void refreshInferenceXTcoPrices();
 
 function toggleWatermarkPanel(): void {
@@ -6390,6 +6393,37 @@ async function importGitHubActionData(): Promise<void> {
     importActionDataEl.disabled = false;
     setImportProgress(null);
   }
+}
+
+// Add the benchmark files carried in the page link (docs/link-import.md) without a review step,
+// then drop them from the URL so a reload does not import them again.
+function importFromLink(): void {
+  let link: ReturnType<typeof readLinkImport>;
+  try {
+    link = readLinkImport(window.location.hash);
+  } catch (error) {
+    clearLinkImportFromUrl();
+    setImportStatus(error instanceof Error ? error.message : 'Link import failed.', true);
+    setStatus('Link import failed; current data was not changed.', true);
+    return;
+  }
+  if (!link) return;
+  clearLinkImportFromUrl();
+  const merged = mergeImportedSeries(link.files.flatMap((file) => parseImportedDataFile(file.name, file.bytes)));
+  const source = link.name || link.source || 'the link';
+  if (merged.length === 0) {
+    setImportStatus(`No importable line data found in ${source}.`, true);
+    setStatus('Link import found no data; current data was not changed.', true);
+    return;
+  }
+  stageImportedSeries(merged, link.runId);
+  addSelectedImportLines();
+  setStatus(`Imported ${merged.length} line${merged.length === 1 ? '' : 's'} from ${source}`);
+}
+
+function clearLinkImportFromUrl(): void {
+  const { pathname, search, hash } = window.location;
+  window.history.replaceState(null, '', `${pathname}${search}${stripLinkImport(hash)}`);
 }
 
 // Stage parsed series into the review panel (shared by GitHub and file imports).

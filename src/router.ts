@@ -53,8 +53,10 @@ let unmountPlotTool: (() => void) | null = null;
 let navigationVersion = 0;
 
 function readWorkspace(): Workspace | null {
-  if (window.location.hash === '#/inferencex') return 'inferencex';
-  if (window.location.hash === '#/plot-tool') return 'plot-tool';
+  // A query after the route (#/inferencex?data=...) carries a link import for that workspace.
+  const route = window.location.hash.split('?', 1)[0];
+  if (route === '#/inferencex') return 'inferencex';
+  if (route === '#/plot-tool') return 'plot-tool';
   return null;
 }
 

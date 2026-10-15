@@ -11,6 +11,7 @@ This is a Vite + TypeScript single-page app for recreating the InferenceX throug
 - `src/styles.css`: global theme, chart layout, legend, and data editor styling.
 - `vite.config.ts`: Vite base path and `/inferencex-api` dev proxy.
 - `docs/import-csv.md`: public CSV/TSV import contract for external integrations and agent-generated files.
+- `src/linkImport.ts` / `docs/link-import.md`: link import (`#/inferencex?data=...`), benchmark files carried in the URL fragment; keep the payload format backward compatible, since CI jobs generate these links.
 - `index.html`: Vite entry HTML.
 - `dist/`: generated production output; do not edit by hand.
 
@@ -57,6 +58,8 @@ No automated test framework is configured yet. Validate changes with:
 ```bash
 npm run build
 ```
+
+Run `npm run check:link-import` after touching `src/linkImport.ts` or the link import flow.
 
 For UI changes, also run `npm run dev` and manually verify the default filters, chart labels, legend controls, data editor collapse/expand behavior, CSV export, and GitHub Actions import if touched.
 
